@@ -1,0 +1,28 @@
+kundoku_converter/                # 项目根目录
+├── data/                         # 数据目录
+│   ├── raw/                      # 原始数据（未处理）
+│   │   ├── train/
+│   │   │   ├── hanwen.txt        # 训练集汉文句子（每行一句）
+│   │   │   └── kundoku.jsonl     # 训练集训读格式（每行一个JSON数组）
+│   │   └── valid/
+│   │       ├── hanwen.txt        # 验证集汉文句子
+│   │       └── kundoku.jsonl     # 验证集训读格式
+│   └── processed/                # 预处理后的数据（可选，如缓存的标签映射）
+│       ├── order_tag2id.json     # 序号标签到ID的映射
+│       └── kana_tag2id.json      # 假名标签到ID的映射
+│
+├── src/                          # 源代码目录
+│   ├── __init__.py
+│   ├── data_utils.py             # 数据加载、预处理工具
+│   ├── model.py                  # 模型定义（LSTM/BERT等）
+│   ├── trainer.py                # 训练和验证逻辑
+│   └── predictor.py              # 推理接口（汉文转训读）
+│
+├── models/                       # 模型保存目录
+│   └── kundoku_model.pt          # 训练好的模型权重
+│
+├── config.py                     # 配置文件（超参数、路径等）
+├── train.py                      # 训练入口脚本
+├── predict_demo.py               # 推理示例脚本
+├── requirements.txt              # 依赖库列表
+└── README.md                     # 项目说明文档
