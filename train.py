@@ -1,3 +1,10 @@
+import sys
+import os
+
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
 from src.data_utils import (
     load_data,
     build_tag_mappings,
@@ -8,8 +15,7 @@ from src.data_utils import (
 from src.model import KundokuModel
 from src.trainer import train_model
 from torch.utils.data import DataLoader
-import config  # 正确引用config
-import os
+import config
 import torch
 
 def main():

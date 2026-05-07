@@ -206,7 +206,7 @@ def train_model(model, train_loader, valid_loader, order_tag2id, kana_tag2id):
                 "order_tag2id": order_tag2id,
                 "kana_tag2id": kana_tag2id
             }, config.MODEL_SAVE_PATH)
-            print(f"✅ 保存最优模型至：{config.MODEL_SAVE_PATH}（验证损失：{best_val_loss:.4f}）")
+            print(f"[OK] 保存最优模型至：{config.MODEL_SAVE_PATH}（验证损失：{best_val_loss:.4f}）")
         
         # 记录指标用于可视化
         visualizer.log_epoch_data(

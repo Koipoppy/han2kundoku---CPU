@@ -1,5 +1,11 @@
-import json
+import sys
 import os
+
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
+import json
 import torch
 from src.model import KundokuModel
 import config  # 正确引用config

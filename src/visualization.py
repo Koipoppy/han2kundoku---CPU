@@ -1,15 +1,16 @@
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from sklearn.metrics import confusion_matrix
 import os
-import config  # 正确引用config
+import config
 from typing import Optional
 
-# 设置中文字体（避免乱码）
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial Unicode MS']
+sns.set_style("whitegrid")
+plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans', 'Arial Unicode MS']
 plt.rcParams['axes.unicode_minus'] = False
-sns.set_style("whitegrid")  # 浅色网格背景
 
 class TrainVisualizer:
     def __init__(self, save_dir: Optional[str] = None):
@@ -36,7 +37,7 @@ class TrainVisualizer:
     def log_epoch_data(self, epoch: int, metrics: dict) -> None:
         """记录每轮训练指标"""
         if not isinstance(epoch, int) or epoch < 1:
-            print(f"⚠️  无效轮次（{epoch}），跳过记录")
+            print(f"[WARNING] 无效轮次（{epoch}），跳过记录")
             return
         self.train_log["epoch"].append(epoch)
         
@@ -45,12 +46,12 @@ class TrainVisualizer:
             if key in valid_keys and isinstance(value, (int, float)):
                 self.train_log[key].append(value)
             elif key in valid_keys:
-                print(f"⚠️  指标{key}类型错误（{type(value)}），跳过记录")
+                print(f"[WARNING] 指标{key}类型错误（{type(value)}），跳过记录")
 
     def plot_loss_curves(self) -> None:
         """绘制损失曲线（总损失、序号损失、假名损失）"""
         if len(self.train_log["epoch"]) == 0:
-            print("⚠️  无训练数据，无法绘制损失曲线")
+            print("[WARNING] 无训练数据，无法绘制损失曲线")
             return
         
         fig, axes = plt.subplots(1, 3, figsize=(18, 6))
@@ -91,12 +92,12 @@ class TrainVisualizer:
         plt.tight_layout()
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
-        print(f"✅ 损失曲线已保存至：{save_path}")
+        print(f"[OK] 损失曲线已保存至：{save_path}")
 
     def plot_lr_curve(self) -> None:
         """绘制学习率衰减曲线"""
         if len(self.train_log["epoch"]) == 0 or len(self.train_log["lr"]) == 0:
-            print("⚠️  无学习率数据，无法绘制曲线")
+            print("[WARNING] 无学习率数据，无法绘制曲线")
             return
         
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -115,12 +116,12 @@ class TrainVisualizer:
         plt.tight_layout()
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
-        print(f"✅ 学习率曲线已保存至：{save_path}")
+        print(f"[OK] 学习率曲线已保存至：{save_path}")
 
     def plot_accuracy_curves(self) -> None:
         """绘制准确率曲线（序号、假名）"""
         if len(self.train_log["epoch"]) == 0:
-            print("⚠️  无训练数据，无法绘制准确率曲线")
+            print("[WARNING] 无训练数据，无法绘制准确率曲线")
             return
         
         fig, axes = plt.subplots(1, 2, figsize=(16, 6))
@@ -153,19 +154,19 @@ class TrainVisualizer:
         plt.tight_layout()
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
-        print(f"✅ 准确率曲线已保存至：{save_path}")
+        print(f"[OK] 准确率曲线已保存至：{save_path}")
 
     def plot_confusion_matrix(self, true_labels: list, pred_labels: list, tag2id: dict, task_name: str) -> None:
         """绘制混淆矩阵（解决set_label None错误）"""
         # 校验输入有效性
         if not (isinstance(true_labels, list) and isinstance(pred_labels, list)):
-            print(f"⚠️  {task_name}混淆矩阵：标签列表必须为list，跳过绘制")
+            print(f"[WARNING] {task_name}混淆矩阵：标签列表必须为list，跳过绘制")
             return
         if not isinstance(tag2id, dict) or len(tag2id) == 0:
-            print(f"⚠️  {task_name}混淆矩阵：标签映射无效，跳过绘制")
+            print(f"[WARNING] {task_name}混淆矩阵：标签映射无效，跳过绘制")
             return
         if len(true_labels) == 0 or len(pred_labels) == 0:
-            print(f"⚠️  {task_name}混淆矩阵：无有效标签，跳过绘制")
+            print(f"[WARNING] {task_name}混淆矩阵：无有效标签，跳过绘制")
             return
         
         # 过滤PAD标签（=0）
@@ -173,7 +174,7 @@ class TrainVisualizer:
         filtered_true = [true_labels[i] for i, mask in enumerate(valid_mask) if mask]
         filtered_pred = [pred_labels[i] for i, mask in enumerate(valid_mask) if mask]
         if len(filtered_true) == 0:
-            print(f"⚠️  {task_name}混淆矩阵：过滤后无有效标签，跳过绘制")
+            print(f"[WARNING] {task_name}混淆矩阵：过滤后无有效标签，跳过绘制")
             return
         
         # 构建标签映射（ID→标签）
@@ -183,7 +184,9 @@ class TrainVisualizer:
         
         # 计算混淆矩阵（归一化到百分比）
         cm = confusion_matrix(filtered_true, filtered_pred, labels=sorted_ids)
-        cm_normalized = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis] * 100
+        row_sums = cm.sum(axis=1)[:, np.newaxis]
+        row_sums[row_sums == 0] = 1
+        cm_normalized = cm.astype("float") / row_sums * 100
         
         # 绘制混淆矩阵
         fig, ax = plt.subplots(figsize=(10, 8))
@@ -215,7 +218,7 @@ class TrainVisualizer:
         plt.tight_layout()
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
-        print(f"✅ {task_name}混淆矩阵已保存至：{save_path}")
+        print(f"[OK] {task_name}混淆矩阵已保存至：{save_path}")
 
     def generate_all_plots(self, val_true_order: list, val_pred_order: list,
                           val_true_kana: list, val_pred_kana: list,
